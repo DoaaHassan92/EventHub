@@ -111,7 +111,7 @@ test.describe('Booking Management — Critical Happy Paths', () => {
 
     // -- Step 6: Verify payment summary section --
     await expect(page.getByText('Payment Summary')).toBeVisible();
-    await expect(page.getByText('Total Paid')).toBeVisible();
+    await expect(page.getByText('Total Pays')).toBeVisible();
 
     // -- Step 7: Verify refund eligibility check button is present --
     await expect(page.locator('#check-refund-btn')).toBeVisible();
