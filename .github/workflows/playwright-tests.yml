@@ -1,0 +1,48 @@
+name: Playwright Tests
+
+# When the tests run
+on:
+  push:
+    branches: [main]        # after code lands on main
+  pull_request:
+    branches: [main]        # before code is merged into main
+  workflow_dispatch:        # manually, from the GitHub Actions tab
+
+# If a newer run starts for the same branch, cancel the older one
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+
+      # A failing test fails this step, which turns the run red
+      - name: Run Playwright tests
+        run: npx playwright test --reporter=html,line
+
+      # always() uploads the report even when tests fail, which is when you need it
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
