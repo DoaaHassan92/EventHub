@@ -22,21 +22,17 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
+      # Same image as local runs: Node, Chromium and npm packages come from the Dockerfile
+      - name: Build test image
+        run: docker build -t eventhub-tests .
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install chromium --with-deps
-
-      # A failing test fails this step, which turns the run red
+      # The report is written to /output/playwright-report, mounted to the workspace.
+      # A failing test makes the container exit non-zero, which turns the run red.
       - name: Run Playwright tests
-        run: npx playwright test --reporter=html,line
+        run: >
+          docker run --rm -e CI=true
+          -v "${{ github.workspace }}:/output"
+          eventhub-tests npx playwright test --reporter=html,line
 
       # always() uploads the report even when tests fail, which is when you need it
       - name: Upload HTML report
