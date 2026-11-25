@@ -46,11 +46,15 @@
 - Guaranteed unique via collision retry
 
 ## 8. Refund Eligibility (Client-Side Logic)
-- **Single ticket bookings (quantity = 1) -> Eligible for refund** with message "Single-ticket bookings qualify for a full refund"
-- **Multi-ticket bookings (quantity > 1) -> NOT eligible for refund** with message "Group bookings (N tickets) are non-refundable"
-- Displays a **4-second spinner** animation before revealing the result
-- This is frontend-only logic (no backend API for refund)
-- Accessible via "Check Refund Eligibility" button on booking detail page
+_Updated 2026-11-25 per KAN-7 PO answers._
+- Triggered from a text-style link (technically a button, `#check-refund-btn`) labelled exactly **"Check eligibility for refund?"** on the booking detail page
+- On click, the link is replaced by a spinner with the text "Checking your refund eligibility…" for a fixed **4 seconds**, then the spinner is replaced by the result
+- **Single ticket bookings (quantity = 1) -> Eligible**: "**Eligible for refund.** Single-ticket bookings qualify for a full refund."
+- **Multi-ticket bookings (quantity > 1) -> Not eligible**: "**Not eligible for refund.** Group bookings (N tickets) are non-refundable." where N is the booking's ticket count (e.g. "Group bookings (3 tickets) are non-refundable.")
+- The prefix ("Eligible for refund." / "Not eligible for refund.") is shown in bold
+- Frontend-only logic based on ticket quantity: no backend API, so no failure/error state
+- Information only: cancelling a booking does not issue a refund; refund processing does not exist
+- Result is not saved: after the result appears the link is not shown again; reloading the page resets to the initial state
 
 ## 9. Price Calculation
 - `totalPrice = event.price x quantity`

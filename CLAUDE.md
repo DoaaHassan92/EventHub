@@ -28,8 +28,8 @@ eventhub/
 │   └── prisma/            # Schema + seed
 ├── tests/             # Playwright E2E tests
 ├── .claude/
-│   ├── commands/      # Custom slash commands (agents)
-│   └── docs/          # Skill documents (reference guides)
+│   ├── agents/        # Pipeline subagents
+│   └── skills/        # Slash-command skills and knowledge skills
 └── playwright.config.ts
 ```
 
@@ -47,7 +47,7 @@ npx playwright test tests/<file>.spec.js --reporter=line  # Run single test
 
 ## Testing Conventions
 - Test files go in `tests/` as `<feature-name>.spec.js`
-- Follow guidelines in `.claude/docs/playwright-best-practices.md`
+- Follow guidelines in `.claude/skills/playwright-best-practices/SKILL.md`
 - Locator priority: data-testid > role > label/placeholder > ID > CSS class
 - No `page.waitForTimeout()` — use `expect().toBeVisible()`
 - Tests must be self-contained (login → action → assert)
@@ -63,14 +63,24 @@ npx playwright test tests/<file>.spec.js --reporter=line  # Run single test
 - Static events (seeded) are immutable
 
 ## Custom Slash Commands (Agents)
+- `/qa-pipeline <KEY>` — e.g. `/qa-pipeline KAN-7`: automates the approved test cases (Jira sub-tasks labelled `test-case`) of a story, runs them, has them independently reviewed, then opens a draft PR to `main` and comments on the story (each outward step only after approval)
+- `/qa-pipeline <feature>` — designs scenarios and strategy first, then automates and reviews them (PR optional)
 - `/generate-tests <feature>` — AI Test Automation Engineer: generates Playwright tests
 - `/review-tests <file>` — AI Code Reviewer: reviews test code quality
 - `/create-scenarios <area>` — AI Functional Tester: creates test scenario documents
 - `/test-strategy <scenarios>` — AI Test Architect: assigns tests to optimal pyramid layers
 
-## Skill Documents
-- `.claude/docs/playwright-best-practices.md` — Playwright testing standards
-- `.claude/docs/eventhub-domain.md` — Domain knowledge and business rules
+Pipeline subagents live in `.claude/agents/` (scenario-designer, test-strategist, test-automation-engineer, test-reviewer) and read their role instructions from the matching skills above.
+
+## Jira and Git Workflow
+- Stories and test cases are in Jira: `eventhubpractice.atlassian.net`, project `KAN`. Story review and test case writing happen in Claude chat (account skills `review-user-story` and `write-test-cases`); test cases are Jira sub-tasks of the story
+- Branches: `main` is the stable branch. Work goes on short-lived branches (`qa/<key>-<feature>`) and reaches `main` through a reviewed PR; CI runs Playwright on every PR to `main`
+- Push only to the `doaa` remote (the fork `DoaaHassan92/EventHub`), never to `origin` (the upstream course repo)
+- Never commit `.claude/settings.local.json`
+
+## Knowledge Skills
+- `.claude/skills/playwright-best-practices/SKILL.md` — Playwright testing standards
+- `.claude/skills/eventhub-domain/` — Domain knowledge: `SKILL.md` (overview, data models), `business-rules.md`, `user-flows.md`, `api-reference.md`, `ui-selectors.md`
 
 ## Code Style
 - Backend: JavaScript with JSDoc, Express patterns
